@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { PrismaClient } from "../generated/prisma/client";
+import prisma from "../prisma";
+
 import {
     hashPassword,
     comparePassword,
@@ -9,7 +10,6 @@ import {
 } from "../utils/auth";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // helper to save refresh token
 const storeRefreshToken = async (token: string, userId: string, role: string, expiresIn: number) => {
@@ -21,7 +21,18 @@ const storeRefreshToken = async (token: string, userId: string, role: string, ex
 
 // ============ Tourist Auth ============ //
 router.post("/tourist/register", async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, passportNumber, aadhaarNumber } = req.body;
+
+    if (!name || !email || !password) return res.status(400).json({ error: 'Missing fields' });
+
+    if (!passportNumber && !aadhaarNumber) {
+        return res.status(400).json({ message: "Either passport or Aadhaar number is required." });
+    }
+
+    const existing = await prisma.tourist.findUnique({ where: { email } });
+    if (existing) return res.status(400).json({ error: 'Email already used' });
+
+
     try {
         const hashed = await hashPassword(password);
         const tourist = await prisma.tourist.create({
@@ -29,9 +40,12 @@ router.post("/tourist/register", async (req, res) => {
                 name,
                 email,
                 password: hashed,
-                touristId: "TID-" + Date.now(),
+                aadhaarNumber,
+                passportNumber,
+                touristId: `TID-${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
             },
         });
+
 
         const payload = { id: tourist.id, role: "tourist" };
         const accessToken = generateAccessToken(payload);

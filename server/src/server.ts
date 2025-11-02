@@ -3,8 +3,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import { PrismaClient } from "./generated/prisma/client";
-import authRoutes from "./routes/authRoutes"; // you'll create this next
+import authRoutes from "./routes/auth.routes"; // you'll create this next
 import { authenticate } from "./middleware/authMiddleware";
+import touristProfileRoutes from "./routes/touristProfile.routes";
+import tripRoutes from "./routes/trip.routes";
 
 dotenv.config();
 
@@ -41,6 +43,8 @@ app.get("/api/protected", (req: Request, res: Response) => {
     res.json({ message: "This is a protected route" });
 });
 
+app.use("/api/tourist", touristProfileRoutes);
+app.use("/api/trip", tripRoutes);
 // ---------- Error Handling ----------
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
