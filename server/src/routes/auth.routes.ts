@@ -42,7 +42,7 @@ router.post("/tourist/register", async (req, res) => {
                 password: hashed,
                 aadhaarNumber,
                 passportNumber,
-                touristId: `TID-${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
+                id: `TID-${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
             },
         });
 
