@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET!;
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
-const ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES || "15m";
+const ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES || "7d";
 const REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES || "7d";
 
 export const hashPassword = async (password: string) => {
@@ -17,7 +17,7 @@ export const comparePassword = (password: string, hashed: string) =>
     bcrypt.compare(password, hashed);
 
 export const generateAccessToken = (payload: object) =>
-    jwt.sign(payload, ACCESS_SECRET as jwt.Secret, { expiresIn: ACCESS_EXPIRES } as jwt.SignOptions);
+    jwt.sign(payload, ACCESS_SECRET as jwt.Secret, { expiresIn: "15m" } as jwt.SignOptions);
 
 export const generateRefreshToken = (payload: object) =>
     jwt.sign(payload, REFRESH_SECRET as jwt.Secret, { expiresIn: REFRESH_EXPIRES } as jwt.SignOptions);

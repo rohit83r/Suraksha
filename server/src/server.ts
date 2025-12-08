@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth.routes"; // you'll create this next
 import { authenticate } from "./middleware/authMiddleware";
 import touristProfileRoutes from "./routes/touristProfile.routes";
 import tripRoutes from "./routes/trip.routes";
+import bodyParser from "body-parser";
 
 dotenv.config();
 
@@ -16,7 +17,7 @@ const PORT = process.env.PORT || 5000;
 
 // ---------- Middleware ----------
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 app.use(morgan("dev"));
 
 // ---------- Prisma Connection ----------
