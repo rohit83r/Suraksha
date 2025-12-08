@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -20,6 +14,18 @@ enum TripStatus {
   CANCELLED
 }
 
+enum GeoFenceType {
+  POLYGON
+  CIRCLE
+}
+
+enum AlertType {
+  ENTERED_GEOFENCE
+  EXITED_GEOFENCE
+  SOS
+  GPS_LOSS
+}
+
 model Tourist {
   id                String             @id @default(uuid())
   name              String
@@ -27,14 +33,19 @@ model Tourist {
   password          String
   passportNumber    String?
   aadhaarNumber     String?
-  trips             Trip[]
+  trips             Trip[]             
   emergencyContacts EmergencyContact[]
-  touristId         String             @unique
   verified          Boolean            @default(false)
   safetyScore       Int                @default(100)
+  qrCodeUrl         String?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
-  qrCodeUrl         String?
+
+  // one-to-one latest location
+  lastLocation      TouristLocation?
+
+  // Added: inverse relation for alerts
+  alerts            Alert[]
 }
 
 model Trip {
@@ -47,6 +58,8 @@ model Trip {
   tourist   Tourist    @relation(fields: [touristId], references: [id])
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+
+  @@index([touristId])
 }
 
 model EmergencyContact {
@@ -55,7 +68,9 @@ model EmergencyContact {
   phone     String
   relation  String
   touristId String
-  Tourist   Tourist @relation(fields: [touristId], references: [id])
+  tourist   Tourist @relation(fields: [touristId], references: [id])
+
+  @@index([touristId])
 }
 
 model Admin {
@@ -64,6 +79,9 @@ model Admin {
   email    String @unique
   password String
   role     String @default("tourism_officer")
+
+  // geofences created by this admin
+  createdGeoFences GeoFence[]
 }
 
 model RefreshToken {
@@ -73,4 +91,55 @@ model RefreshToken {
   role      String
   createdAt DateTime @default(now())
   expiresAt DateTime
+
+  @@index([userId])
+}
+
+model GeoFence {
+  id                String    @id @default(uuid())
+  name              String
+  description       String?
+  type              GeoFenceType
+  // coords: JSON for prototype (polygon = array of {lat,lng}, circle = [center])
+  coords            Json
+  radiusMeters      Int?      // for CIRCLE
+  active            Boolean   @default(true)
+  notifyAuthorities Boolean   @default(true)
+  severity          Int       @default(1)
+  createdById       String
+  createdBy         Admin     @relation(fields: [createdById], references: [id])
+  createdAt         DateTime  @default(now())
+
+  alerts            Alert[]
+}
+
+model Alert {
+  id         String    @id @default(uuid())
+  touristId  String
+  tourist    Tourist   @relation(fields: [touristId], references: [id])
+  geoFenceId String?
+  geoFence   GeoFence? @relation(fields: [geoFenceId], references: [id])
+  lat        Float
+  lng        Float
+  type       AlertType
+  message    String?
+  createdAt  DateTime  @default(now())
+  resolved   Boolean   @default(false)
+
+  @@index([touristId])
+  @@index([geoFenceId])
+  @@index([createdAt])
+}
+
+model TouristLocation {
+  id        String   @id @default(uuid())
+  touristId String   @unique
+  tourist   Tourist  @relation(fields: [touristId], references: [id])
+  lat       Float
+  lng       Float
+  accuracy  Float?   // GPS accuracy in meters (optional)
+  updatedAt DateTime @updatedAt
+
+  @@index([touristId])
+  @@index([updatedAt])
 }
