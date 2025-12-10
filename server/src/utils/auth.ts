@@ -17,8 +17,12 @@ export const comparePassword = (password: string, hashed: string) =>
     bcrypt.compare(password, hashed);
 
 export const generateAccessToken = (payload: object) =>
-    jwt.sign(payload, ACCESS_SECRET as jwt.Secret, { expiresIn: "15m" } as jwt.SignOptions);
+    jwt.sign(payload, ACCESS_SECRET as jwt.Secret, { expiresIn: ACCESS_EXPIRES } as jwt.SignOptions);
 
+export const generateRegToken = (payload: object) =>
+    jwt.sign(payload, process.env.REG_JWT_SECRET as jwt.Secret, { expiresIn: '15m' } as jwt.SignOptions);
+export const verifyRegToken = (token: string) =>
+    jwt.verify(token, process.env.REG_JWT_SECRET as jwt.Secret);
 export const generateRefreshToken = (payload: object) =>
     jwt.sign(payload, REFRESH_SECRET as jwt.Secret, { expiresIn: REFRESH_EXPIRES } as jwt.SignOptions);
 
