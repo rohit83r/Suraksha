@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  ml-worker:
+    build: .
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - WINDOW_SIZE=20
+      - ANOMALY_THRESHOLD=-0.2
+      - MODEL_PATH=/models/if_model.joblib
+    depends_on:
+      - redis
+    volumes:
+      - ./models:/models:ro  # for dev: mount local models folder
