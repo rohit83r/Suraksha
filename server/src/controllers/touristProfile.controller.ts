@@ -18,7 +18,6 @@ export const getTouristProfile = async (req: Request, res: Response) => {
                 passportNumber: tourist.passportNumber,
                 aadhaarNumber: tourist.aadhaarNumber,
                 verified: tourist.verified,
-                qrCodeUrl: tourist.qrCodeUrl,
                 emergencyContacts: tourist.emergencyContacts,
                 trips: tourist.trips,
             },

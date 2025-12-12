@@ -5,6 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum TripStatus {
@@ -29,21 +30,20 @@ model LocationPing {
   id         String   @id @default(uuid())
   touristId  String
   tourist    Tourist  @relation(fields: [touristId], references: [id])
-  tripId     String?  // optional linking to Trip
+  tripId     String? // optional linking to Trip
   deviceId   String?
   lat        Float
   lng        Float
   speed      Float?
   bearing    Float?
   accuracy   Float?
-  status     String?    // moving, paused, charging...
-  ts         DateTime   // timestamp from device
-  receivedAt DateTime   @default(now())
+  status     String? // moving, paused, charging...
+  ts         DateTime // timestamp from device
+  receivedAt DateTime @default(now())
 
   @@index([touristId, ts])
   @@index([ts])
 }
-
 
 model Tourist {
   id                String             @id @default(uuid())
@@ -56,18 +56,37 @@ model Tourist {
   emergencyContacts EmergencyContact[]
   verified          Boolean            @default(false)
   safetyScore       Int                @default(100)
-  qrCodeUrl         String?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
-  
+
   // one-to-one latest location
   lastLocation TouristLocation?
 
   // Added: inverse relation for alerts
-  alerts            Alert[]
-  
+  alerts Alert[]
+
   // Add this line for LocationPing relation
-  locationPings     LocationPing[]     // Add this line
+  locationPings LocationPing[] // Add this line
+  touristIDs    TouristID[]
+}
+
+model TouristID {
+  id        String  @id @default(uuid())
+  touristId String
+  tourist   Tourist @relation(fields: [touristId], references: [id])
+
+  tid       String   @unique
+  signature String
+  version   String   @default("1.0")
+  qrCodeUrl String?
+  expiresAt DateTime
+  active    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([touristId])
+  @@index([tid])
 }
 
 model Trip {

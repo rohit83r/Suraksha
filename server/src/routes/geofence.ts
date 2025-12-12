@@ -1,13 +1,14 @@
 import express from "express";
 import prisma from "../prisma";
 import { LatLng } from "../utils/geofence";
+import { authorizeRoles } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
 // Create geofence
 // POST /api/v1/geofences
 // body: { name, description?, type: "POLYGON"|"CIRCLE", coords: [...], radiusMeters? , notifyAuthorities?, severity? }
-router.post("/", async (req, res) => {
+router.post("/", authorizeRoles("tourism_officer"), async (req, res) => {
   try {
     const { name, description, type, coords, radiusMeters, notifyAuthorities, severity, createdById } = req.body;
 
