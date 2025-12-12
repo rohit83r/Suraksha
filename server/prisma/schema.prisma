@@ -5,7 +5,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum TripStatus {
@@ -53,7 +52,7 @@ model Tourist {
   password          String
   passportNumber    String?
   aadhaarNumber     String?
-  trips             Trip[]             
+  trips             Trip[]
   emergencyContacts EmergencyContact[]
   verified          Boolean            @default(false)
   safetyScore       Int                @default(100)
@@ -62,7 +61,7 @@ model Tourist {
   updatedAt         DateTime           @updatedAt
   
   // one-to-one latest location
-  lastLocation      TouristLocation?
+  lastLocation TouristLocation?
 
   // Added: inverse relation for alerts
   alerts            Alert[]
@@ -119,21 +118,21 @@ model RefreshToken {
 }
 
 model GeoFence {
-  id                String    @id @default(uuid())
+  id                String       @id @default(uuid())
   name              String
   description       String?
   type              GeoFenceType
   // coords: JSON for prototype (polygon = array of {lat,lng}, circle = [center])
   coords            Json
-  radiusMeters      Int?      // for CIRCLE
-  active            Boolean   @default(true)
-  notifyAuthorities Boolean   @default(true)
-  severity          Int       @default(1)
+  radiusMeters      Int? // for CIRCLE
+  active            Boolean      @default(true)
+  notifyAuthorities Boolean      @default(true)
+  severity          Int          @default(1)
   createdById       String
-  createdBy         Admin     @relation(fields: [createdById], references: [id])
-  createdAt         DateTime  @default(now())
+  createdBy         Admin        @relation(fields: [createdById], references: [id])
+  createdAt         DateTime     @default(now())
 
-  alerts            Alert[]
+  alerts Alert[]
 }
 
 model Alert {
@@ -160,7 +159,7 @@ model TouristLocation {
   tourist   Tourist  @relation(fields: [touristId], references: [id])
   lat       Float
   lng       Float
-  accuracy  Float?   // GPS accuracy in meters (optional)
+  accuracy  Float? // GPS accuracy in meters (optional)
   updatedAt DateTime @updatedAt
 
   @@index([touristId])

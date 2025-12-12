@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.routes";
 import { authenticate } from "./middleware/authMiddleware";
 import touristProfileRoutes from "./routes/touristProfile.routes";
 import tripRoutes from "./routes/trip.routes";
+import bodyParser from "body-parser";
 import http from "http";
 import { Server as SocketIOServer } from "socket.io";
 import geofenceRouter from "./routes/geofence";
@@ -23,7 +24,7 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5000;
 
 // ---------- Middleware ----------
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 app.use(morgan("dev"));
 
 // Create HTTP server + Socket.IO

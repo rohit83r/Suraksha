@@ -6,7 +6,7 @@ import {
     comparePassword,
     generateAccessToken,
     generateRefreshToken,
-    verifyRefreshToken,
+    verifyRefreshToken
 } from "../utils/auth";
 
 const router = Router();
@@ -19,7 +19,9 @@ const storeRefreshToken = async (token: string, userId: string, role: string, ex
     });
 };
 
-// ============ Tourist Auth ============ //
+/* =======================================================
+   TOURIST REGISTER 
+========================================================= */
 router.post("/tourist/register", async (req, res) => {
     const { name, email, password, passportNumber, aadhaarNumber } = req.body;
 
@@ -32,9 +34,9 @@ router.post("/tourist/register", async (req, res) => {
     const existing = await prisma.tourist.findUnique({ where: { email } });
     if (existing) return res.status(400).json({ error: 'Email already used' });
 
-
     try {
         const hashed = await hashPassword(password);
+
         const tourist = await prisma.tourist.create({
             data: {
                 name,
@@ -45,7 +47,6 @@ router.post("/tourist/register", async (req, res) => {
                 id: `TID-${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
             },
         });
-
 
         const payload = { id: tourist.id, role: "tourist" };
         const accessToken = generateAccessToken(payload);
@@ -59,6 +60,35 @@ router.post("/tourist/register", async (req, res) => {
     }
 });
 
+/* =======================================================
+   NEW: Aadhaar Verification API (Placeholder)
+   You can integrate DigiLocker / Offline XML later
+========================================================= */
+router.post("/tourist/verify-aadhaar", async (req, res) => {
+    const { userId } = req.body;
+
+    // TODO: xml parsing OR digilocker OR otp flow etc.
+
+
+    try {
+        const tourist = await prisma.tourist.findUnique({ where: { id: userId } });
+        if (!tourist) return res.status(404).json({ message: "Tourist not found" });
+
+        return res.json({
+            message: "Aadhaar verification API hit successfully.",
+            status: "pending",
+            nextStep: "Integrate DigiLocker or Aadhaar Offline XML here"
+        });
+
+    } catch (err: any) {
+        console.error(err);
+        return res.status(500).json({ message: "Server error" });
+    }
+});
+
+/* =======================================================
+   LOGIN 
+========================================================= */
 router.post("/tourist/login", async (req, res) => {
     const { email, password } = req.body;
     const tourist = await prisma.tourist.findUnique({ where: { email } });
@@ -75,7 +105,9 @@ router.post("/tourist/login", async (req, res) => {
     res.json({ accessToken, refreshToken });
 });
 
-// ============ Admin Auth ============ //
+/* =======================================================
+   ADMIN LOGIN 
+========================================================= */
 router.post("/admin/login", async (req, res) => {
     const { email, password } = req.body;
     const admin = await prisma.admin.findUnique({ where: { email } });
@@ -92,7 +124,9 @@ router.post("/admin/login", async (req, res) => {
     res.json({ accessToken, refreshToken });
 });
 
-// ============ Token Refresh ============ //
+/* =======================================================
+   TOKEN REFRESH 
+========================================================= */
 router.post("/refresh", async (req, res) => {
     const { refreshToken } = req.body;
     if (!refreshToken) return res.status(400).json({ message: "No refresh token provided" });
@@ -110,7 +144,9 @@ router.post("/refresh", async (req, res) => {
     }
 });
 
-// ============ Logout ============ //
+/* =======================================================
+   LOGOUT 
+========================================================= */
 router.post("/logout", async (req, res) => {
     const { refreshToken } = req.body;
     if (refreshToken) {
