@@ -26,6 +26,26 @@ enum AlertType {
   GPS_LOSS
 }
 
+model LocationPing {
+  id         String   @id @default(uuid())
+  touristId  String
+  tourist    Tourist  @relation(fields: [touristId], references: [id])
+  tripId     String?  // optional linking to Trip
+  deviceId   String?
+  lat        Float
+  lng        Float
+  speed      Float?
+  bearing    Float?
+  accuracy   Float?
+  status     String?    // moving, paused, charging...
+  ts         DateTime   // timestamp from device
+  receivedAt DateTime   @default(now())
+
+  @@index([touristId, ts])
+  @@index([ts])
+}
+
+
 model Tourist {
   id                String             @id @default(uuid())
   name              String
@@ -40,12 +60,15 @@ model Tourist {
   qrCodeUrl         String?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
-
+  
   // one-to-one latest location
   lastLocation      TouristLocation?
 
   // Added: inverse relation for alerts
   alerts            Alert[]
+  
+  // Add this line for LocationPing relation
+  locationPings     LocationPing[]     // Add this line
 }
 
 model Trip {
