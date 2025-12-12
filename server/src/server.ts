@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import { PrismaClient } from "./generated/prisma/client";
 import authRoutes from "./routes/auth.routes";
-import { authenticate } from "./middleware/authMiddleware";
+import { authenticate, authorizeRoles } from "./middleware/authMiddleware";
 import touristProfileRoutes from "./routes/touristProfile.routes";
 import tripRoutes from "./routes/trip.routes";
 import bodyParser from "body-parser";
@@ -15,6 +15,9 @@ import geofenceRouter from "./routes/geofence";
 import locationRouterFactory from "./routes/location";
 import locationAiRouter from "./routes/locationAiDetection";
 import { startAlertsSubscriber } from "./alerts/alertsSubscriber";
+import adminTouristRoutes from "./routes/admin";
+import verifyRoutes from "./routes/verify.routes";
+
 
 dotenv.config();
 
@@ -47,17 +50,12 @@ const io = new SocketIOServer(server, {
 app.get("/", (req: Request, res: Response) => {
   res.send("🌍 Suraksha Backend API is running...");
 });
-
+app.use("/api/tourist", verifyRoutes);
 // Public/auth routes
 app.use("/api/auth", authRoutes);
 
 // Protect routes below with authentication middleware
 app.use(authenticate);
-
-// Example protected route
-app.get("/api/protected", (req: Request, res: Response) => {
-  res.json({ message: "This is a protected route" });
-});
 
 app.use("/api/tourist", touristProfileRoutes);
 app.use("/api/trip", tripRoutes);
@@ -70,6 +68,9 @@ app.use("/api/location", locationRouterFactory(io));
 
 // Location AI detection routes (you mentioned path changed)
 app.use("/api/location-ai", locationAiRouter);
+
+app.use(authorizeRoles(`admin`, `tourism_officer`));
+app.use("/api/admin", adminTouristRoutes);
 
 // ---------- Error Handling ----------
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
