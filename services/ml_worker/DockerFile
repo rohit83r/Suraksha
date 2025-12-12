@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1
+WORKDIR /app
+
+# system deps (small)
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends build-essential \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# copy source
+COPY src/ ./src/
+COPY tools/ ./tools/
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# model dir for mounted artifacts
+RUN mkdir -p /models
+ENV MODEL_DIR=/models
+ENV REDIS_URL=redis://redis:6379
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["python", "src/worker.py"]

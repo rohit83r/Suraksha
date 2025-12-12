@@ -1,0 +1,5 @@
+# Do not commit model artifacts
+/models/
+*.joblib
+__pycache__/
+.env
