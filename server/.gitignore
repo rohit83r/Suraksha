@@ -2,6 +2,7 @@ node_modules
 # Keep environment variables out of version control
 .env
 pnpm-lock.yml
+pnpm-lock.yaml
 
 /src/generated/prisma
 /prisma/migrations
